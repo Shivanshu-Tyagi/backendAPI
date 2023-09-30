@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 require('dotenv').config();
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const authRoutes = require('./auth');
+const authRoutes = require('./routes/auth');
 
 
 
@@ -16,7 +16,7 @@ app.use(cors());
 // Connect to MongoDB using async/await
 async function connectToMongoDB() {
   try {
-    await mongoose.connect(process.env.MONGODB_URL, {
+    await mongoose.connect('mongodb+srv://pureGheeHelper:pureGhee2023@cluster0.uwp5ttj.mongodb.net/?retryWrites=true&w=majority', {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     //   useCreateIndex: true
