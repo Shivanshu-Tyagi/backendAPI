@@ -9,7 +9,8 @@ const orderSchema = new mongoose.Schema({
   pincode: { type: String, required: true },
   town: { type: String, required: true },
   state: { type: String, required: true },
-  product: { type: String, required: true }
+  product: { type: String, required: true },
+  quantity: { type: String, required: true }
 });
 
 const Order = mongoose.model('Order', orderSchema);
