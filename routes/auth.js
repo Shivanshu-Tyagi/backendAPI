@@ -83,7 +83,7 @@ router.post('/updatePrice', async (req, res) => {
 
 const fixedReferralCode = 'DHRAM04';
 
-router.post('/register2', async (req, res) => {
+router.post('/register', async (req, res) => {
     const { username } = req.body;
 
     // Find the referrer by the fixed referral code
