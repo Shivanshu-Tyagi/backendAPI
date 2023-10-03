@@ -2,7 +2,7 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const User = require('../models/user');
 const Order = require('../models/order');
-
+const Refral = require('../models/refral');
 const router = express.Router();
 
 // Generate a unique ID
@@ -61,13 +61,12 @@ router.post('/order', async (req, res) => {
   }
 });
 router.post('/updatePrice', async (req, res) => {
-  const productId = req.body.productId;
-  const newPrice = req.body.newPrice;
+  const { productId, newPrice, newQuantity } = req.body;
 
   try {
     const product = await Product.findOneAndUpdate(
       { _id: productId },
-      { $set: { price: newPrice } },
+      { $set: { price: newPrice, quantity: newQuantity } },
       { new: true }
     );
 
@@ -75,12 +74,42 @@ router.post('/updatePrice', async (req, res) => {
       return res.status(404).send('Product not found.');
     }
 
-    return res.status(200).json('Price updated successfully.');
+    return res.status(200).json('Price and quantity updated successfully.');
   } catch (error) {
-    console.error('Error updating price:', error);
+    console.error('Error updating price and quantity:', error);
     return res.status(500).send('Internal server error.');
   }
 });
+
+const fixedReferralCode = 'DHRAM04';
+
+app.post('/register', async (req, res) => {
+    const { username } = req.body;
+
+    // Find the referrer by the fixed referral code
+    const referrer = await Refral.findOne({ username: fixedReferralCode });
+
+    if (referrer) {
+        // Create a new user
+        const newUser = new Refral({
+            username,
+            referralLink: `https://example.com/referral/${username}`,
+            walletBalance: 0
+        });
+
+        // Update referrer's wallet balance
+        referrer.walletBalance += 200;
+        await referrer.save();
+
+        // Save the new user
+        await newUser.save();
+
+        res.json({ message: 'User registered successfully.' });
+    } else {
+        res.status(400).json({ message: 'Referrer not found.' });
+    }
+});
+
 
 router.get('/users', async (req, res) => {
   try {
