@@ -25,7 +25,7 @@ const generateReferralCode = () => {
 };
 
 router.post('/register', async (req, res) => {
-    const { fullname, username, email, password, referralcode } = req.body;
+    const { mobile, username, email, password, referralcode } = req.body;
   
     let referredByUser = null;
   
@@ -43,7 +43,7 @@ router.post('/register', async (req, res) => {
   
         // Create the new user with a generated referral code and assign 100 points for using a referral code
         const newUser = new User({
-          fullname: fullname,
+          Mobile: mobile,
           username,
           email,
           password,
@@ -59,7 +59,7 @@ router.post('/register', async (req, res) => {
     } else {
       // If no referral code is provided, proceed with normal registration
       const newUser = new User({
-        fullname: fullname,
+        Mobile: mobile,
         username,
         email,
         password,
@@ -76,7 +76,7 @@ router.post('/register', async (req, res) => {
            res.json({
              message: 'User registered successfully.',
              userInfo: {
-               name: newUser.fullname,
+              Mobile: newUser.mobile,
                username: newUser.username,
                email: newUser.email,
                referralCode: newUser.referral_code,
@@ -102,7 +102,7 @@ router.post('/login', async (req, res) => {
     res.json({
       message: `Welcome to this page, ${user.username}`,
       userInfo: {
-        fullname: user.fullname,
+        Mobile: user.mobile,
         username: user.username,
         email: user.email,
         referralCode: user.referral_code,
