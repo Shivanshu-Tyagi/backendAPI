@@ -26,7 +26,7 @@ const generateReferralCode = () => {
 
 router.post('/register', async (req, res) => {
     const { mobile, username, email, password, referralcode } = req.body;
-  
+    const uniqueID = generateUniqueID();
     let referredByUser = null;
   
     if (referralcode) {
@@ -49,6 +49,7 @@ router.post('/register', async (req, res) => {
           password,
           referral_code: generateReferralCode(),
           referral_point: 100,  // User using a referral code gets 100 points
+          uniqueID
         });
   
         await newUser.save();
@@ -65,6 +66,7 @@ router.post('/register', async (req, res) => {
         password,
         referral_code: generateReferralCode(),
         referral_point: 0,
+        uniqueID
       });
   
       try {
@@ -81,7 +83,8 @@ router.post('/register', async (req, res) => {
                email: newUser.email,
                referralCode: newUser.referral_code,
                referralPoints: newUser.referral_point,
-               referralLink: referralLink  // Include referralLink in the userInfo object
+               referralLink: referralLink,  // Include referralLink in the userInfo object
+               uniqueID
              }
         });
       } catch (err) {
@@ -106,7 +109,7 @@ router.post('/login', async (req, res) => {
         username: user.username,
         email: user.email,
         referralCode: user.referral_code,
-        referralPoints: user.referral_point
+        referralPoints: user.referral_point,
       }
     });
   } catch (err) {
