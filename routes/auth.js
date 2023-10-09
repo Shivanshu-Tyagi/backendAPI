@@ -72,8 +72,9 @@ router.post('/register', async (req, res) => {
       try {
         await newUser.save();
            // Update the referral link for the new user
-           let referralLink = `https://pure-ghee-api.onrender.com/api/auth/index.html?referralcode=${newUser.referral_code}`;
-           await User.updateOne({ _id: newUser._id }, { referral_link: referralLink });
+           const referralLink = `https://pure-ghee-api.onrender.com/api/auth/index.html?referralcode=${newUser.referral_code}`;
+           newUser.referral_link = referralLink;
+           await newUser.save();
          
            res.json({
              message: 'User registered successfully.',
