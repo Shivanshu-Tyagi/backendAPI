@@ -180,6 +180,7 @@ router.get('/user/details/:username', async (req, res) => {
 });
 
 router.post('/submit-form', (req, res) => {
+  console.log('Received form submission:', req.body);
   const formData = req.body;
 
   const newFormData = new FormData({
