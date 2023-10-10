@@ -180,9 +180,10 @@ router.get('/user/details/:username', async (req, res) => {
 });
 
 router.post('/submit-form', (req, res) => {
-  console.log('Received form submission:', req.body);
   const formData = req.body;
+  console.log('Received form submission:', formData); // Log form data
 
+ 
   const newFormData = new FormData({
     name: formData.name,
     address: formData.address,
@@ -194,7 +195,7 @@ router.post('/submit-form', (req, res) => {
     if (err) {
       res.status(500).send('Error saving form data.');
     } else {
-      res.status(200).send('Form data saved successfully!');
+      res.status(200).json({ message: 'Form data received successfully!' });
     }
   });
 });
