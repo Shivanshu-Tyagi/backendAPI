@@ -179,26 +179,27 @@ router.get('/user/details/:username', async (req, res) => {
   }
 });
 
-router.post('/submit-form', (req, res) => {
+router.post('/submit-form', async (req, res) => {
   const formData = req.body;
   console.log('Received form submission:', formData); // Log form data
 
- 
-  const newFormData = new FormData({
-    name: formData.name,
-    address: formData.address,
-    pincode: formData.pincode,
-    mobile: formData.mobile
-  });
+  try {
+    const newFormData = new FormData({
+      name: formData.name,
+      address: formData.address,
+      pincode: formData.pincode,
+      mobile: formData.mobile
+    });
 
-  newFormData.save((err) => {
-    if (err) {
-      res.status(500).send('Error saving form data.');
-    } else {
-      res.status(200).json({ message: 'Form data received successfully!' });
-    }
-  });
+    await newFormData.save(); // Use await to wait for the save operation to complete
+
+    res.status(200).json({ message: 'Form data received successfully!' });
+  } catch (error) {
+    console.error('Error saving form data:', error);
+    res.status(500).send('Error saving form data.');
+  }
 });
+
 
 
 router.get('/users', async (req, res) => {
