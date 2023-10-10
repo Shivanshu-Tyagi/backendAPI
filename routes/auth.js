@@ -219,5 +219,15 @@ router.get('/orders', async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+router.get('/admin/form-data', async (req, res) => {
+  try {
+    // Fetch form data from your MongoDB collection
+    const formData = await FormData.find(); // Assuming FormData is your Mongoose model
+
+    res.json({ formData });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 module.exports = router;
