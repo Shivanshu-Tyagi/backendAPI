@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt');
 const User = require('../models/user');
 const Order = require('../models/order');
 const Refral = require('../models/refral');
+const FormData = require('../models/event');
 const router = express.Router();
 
 // Generate a unique ID
@@ -178,6 +179,24 @@ router.get('/user/details/:username', async (req, res) => {
   }
 });
 
+router.post('/submit-form', (req, res) => {
+  const formData = req.body;
+
+  const newFormData = new FormData({
+    name: formData.name,
+    address: formData.address,
+    pincode: formData.pincode,
+    mobile: formData.mobile
+  });
+
+  newFormData.save((err) => {
+    if (err) {
+      res.status(500).send('Error saving form data.');
+    } else {
+      res.status(200).send('Form data saved successfully!');
+    }
+  });
+});
 
 router.get('/users', async (req, res) => {
   try {
