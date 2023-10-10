@@ -1,10 +1,10 @@
 const mongoose = require('mongoose');
 
 const formDataSchema = new mongoose.Schema({
-  name: String,
-  address: String,
-  pincode: String,
-  mobile: String
+  name: { type: String, required: true },
+  address: { type: String, required: true },
+  pincode: { type: String, required: true },
+  mobile: { type: String, required: true }
 });
 
 const FormData = mongoose.model('FormData', formDataSchema);
