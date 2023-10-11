@@ -30,7 +30,7 @@ const userSchema = new mongoose.Schema({
     default: 0
   },
   referral_link: {
-    type:String,
+    type: String
   },
   uniqueID: {
     type: String,
