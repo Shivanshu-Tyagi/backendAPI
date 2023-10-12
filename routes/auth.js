@@ -26,73 +26,63 @@ const generateReferralCode = () => {
 };
 
 router.post('/register', async (req, res) => {
-    const { mobile, username, email, password, referralcode } = req.body;
-    const uniqueID = generateUniqueID();
+  const { mobile, username, email, password, referralcode } = req.body;
+  const uniqueID = generateUniqueID();
+
+  // Generate a referral code for the new user
+  const newUserReferralCode = generateReferralCode();
+
+  // Generate the referral link
+  const referralLink = `https://example.com/register?referralcode=${newUserReferralCode}`;
+
+  try {
     let referredByUser = null;
-  
+    let referralPoints = 0; // Set initial referral points to 0
+
     if (referralcode) {
-      try {
-        referredByUser = await User.findOne({ referral_code: referralcode });
-  
-        if (!referredByUser) {
-          return res.status(400).json({ error: 'Invalid referral code.' });
-        }
-  
-        // Increment points for the referrer and the referee
-        referredByUser.referral_point += 200;  // Referrer gets 200 points
-        await referredByUser.save();  // Await the save operation
-  
-        // Create the new user with a generated referral code and assign 100 points for using a referral code
-        const newUser = new User({
-          Mobile: mobile,
-          username,
-          email,
-          password,
-          referral_code: generateReferralCode(),
-          referral_point: 100,  // User using a referral code gets 100 points
-          uniqueID
-        });
-  
-        await newUser.save();
-        res.json({ message: 'User registered successfully.' });
-      } catch (err) {
-        res.status(500).json({ error: err.message });
+      // If a referral code is provided, find the referring user
+      referredByUser = await User.findOne({ referral_code: referralcode });
+
+      if (!referredByUser) {
+        return res.status(400).json({ error: 'Invalid referral code.' });
       }
-    } else {
-      // If no referral code is provided, proceed with normal registration
-      const newUser = new User({
-        Mobile: mobile,
-        username,
-        email,
-        password,
-        referral_code: generateReferralCode(),
-        referral_point: 0,
-        uniqueID
-      });
-  
-      try {
-        await newUser.save();
-           // Update the referral link for the new user
-           let referralLink = `https://pure-ghee-api.onrender.com/api/auth/index.html?referralcode=${newUser.referral_code}`;
-           await User.updateOne({ _id: newUser._id }, { referral_link: referralLink });
-         
-           res.json({
-             message: 'User registered successfully.',
-             userInfo: {
-              Mobile: newUser.mobile,
-               username: newUser.username,
-               email: newUser.email,
-               referralCode: newUser.referral_code,
-               referralPoints: newUser.referral_point,
-               referralLink: referralLink,  // Include referralLink in the userInfo object
-               uniqueID
-             }
-        });
-      } catch (err) {
-        res.status(500).json({ error: err.message });
-      }
+
+      referralPoints = 200; // Referrer gets 200 points
+      referredByUser.referral_point += referralPoints; // Increment points for the referrer
+      await referredByUser.save(); // Await the save operation
     }
-  });
+
+    // Create the new user with a generated referral code and assign referral points based on the condition
+    const newUser = new User({
+      Mobile: mobile,
+      username,
+      email,
+      password,
+      referral_code: newUserReferralCode,
+      referral_point: referralPoints, // Assign referral points
+      uniqueID,
+      referral_link: referralLink // Store the referral link for the new user
+    });
+
+    await newUser.save();
+
+    res.json({
+      message: 'User registered successfully.',
+      userInfo: {
+        Mobile: newUser.mobile,
+        username: newUser.username,
+        email: newUser.email,
+        referralCode: newUser.referral_code,
+        referralPoints: newUser.referral_point,
+        referralLink: referralLink, // Include referralLink in the userInfo object
+        uniqueID
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
