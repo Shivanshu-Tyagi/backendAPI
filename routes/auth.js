@@ -33,7 +33,7 @@ router.post('/register', async (req, res) => {
   const newUserReferralCode = generateReferralCode();
 
   // Generate the referral link
-  const referralLink = `https://example.com/register?referralcode=${newUserReferralCode}`;
+  const referralLink = `https://remarkable-khapse-f024f6.netlify.app/register?referralcode=${newUserReferralCode}`;
 
   try {
     let referredByUser = null;
