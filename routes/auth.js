@@ -33,7 +33,7 @@ router.post('/register', async (req, res) => {
   const newUserReferralCode = generateReferralCode();
 
   // Generate the referral link
-  const referralLink = `https://pureghee.org.in/register?referralcode=${newUserReferralCode}`;
+  const referralLink = `https://pureghee.org.in/register.html?referralcode=${newUserReferralCode}`;
 
   try {
     let referredByUser = null;
