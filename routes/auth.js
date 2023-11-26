@@ -1,5 +1,6 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
+const passwordValidator = require('password-validator');
 const User = require('../models/user');
 const Order = require('../models/order');
 const Refral = require('../models/refral');
@@ -25,9 +26,85 @@ const generateReferralCode = () => {
   return referralCode;
 };
 
+// Create a password schema
+const passwordSchema = new passwordValidator();
+
+// Add password rules
+passwordSchema
+  .is().min(6)           // Minimum length 6 characters
+  .is().max(100)         // Maximum length 100 characters
+  .has().letters()       // Must have letters
+  .has().digits()       // Must have digits
+  .has().uppercase() // Must have uppercase letters
+  .has().lowercase(); // Must have lowercase letters
+
+
+const isValidName = (name) => /^[A-Za-z]+$/.test(name);
+const isValidMobile = (mobile) => /^\d{10}$/.test(mobile);
+const isValidEmail = (email) => /^[^\s@]+@gmail\.com$/.test(email);
+
 router.post('/register', async (req, res) => {
   const { mobile, username, email, password, referralcode } = req.body;
   const uniqueID = generateUniqueID();
+
+  // Validate name and mobile number
+  if (!isValidName(username)) {
+    return res.status(400).json({ error: 'Invalid name. Name should contain only letters.' });
+  }
+
+  if (!isValidMobile(mobile)) {
+    return res.status(400).json({ error: 'Invalid mobile number. Mobile number should be 10 digits.' });
+  }
+  
+
+  // Check if the mobile number already exists
+  const existingUser = await User.findOne({ Mobile: mobile });
+  if (existingUser) {
+    return res.status(400).json({ error: 'Mobile number already exists. Please choose another number.' });
+  }
+
+  // Check if the email already exists
+  const existingUserEmail = await User.findOne({ email: email });
+  if (existingUserEmail) {
+    return res.status(400).json({ error: 'Email address already exists. Please use another email address.' });
+  }
+
+   // Validate the email using the Gmail validation
+   if (!isValidEmail(email)) {
+    return res.status(400).json({ error: 'Invalid email. Please use a Gmail address.' });
+  }
+  // Validate the password using the password schema
+  const validationResult = passwordSchema.validate(password, { list: true });
+
+  if (validationResult.length > 0) {
+    const remainingRequirements = validationResult.map((rule) => {
+      switch (rule) {
+        case 'min':
+          return 'at least 6 characters';
+        case 'max':
+          return 'no more than 100 characters';
+        case 'letters':
+          return 'at least one letter';
+        case 'digits':
+          return 'at least one digit';
+        case 'lowercase':
+          return 'at least one lowercase';
+        case 'uppercase':
+          return 'at least one uppercase';
+        // Add more cases if you have additional rules
+        default:
+          return 'unknown requirement';
+      }
+    });
+
+    const errorMessage = `Invalid password. Please ensure it meets the following requirements: ${remainingRequirements.join(', ')}.`;
+
+    return res.status(400).json({ error: errorMessage });
+  }
+
+
+  // Hash the password
+  const hashedPassword = await bcrypt.hash(password, 10);
 
   // Generate a referral code for the new user
   const newUserReferralCode = generateReferralCode();
@@ -57,7 +134,7 @@ router.post('/register', async (req, res) => {
       Mobile: mobile,
       username,
       email,
-      password,
+      password: hashedPassword,
       referral_code: newUserReferralCode,
       referral_point: referralPoints, // Assign referral points
       uniqueID,
@@ -69,7 +146,7 @@ router.post('/register', async (req, res) => {
     res.json({
       message: 'User registered successfully.',
       userInfo: {
-        Mobile: newUser.mobile,
+        Mobile: newUser.Mobile,
         username: newUser.username,
         email: newUser.email,
         referralCode: newUser.referral_code,
@@ -87,26 +164,33 @@ router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const user = await User.findOne({ email, password });
+    const user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(400).json({ error: 'Invalid email or password.' });
+      return res.status(400).json({ error: 'Invalid email.' });
+    }
+
+    const passwordMatch = await bcrypt.compare(password, user.password);
+
+    if (!passwordMatch) {
+      return res.status(400).json({ error: 'Invalid password.' });
     }
 
     res.json({
       message: `Welcome to this page, ${user.username}`,
       userInfo: {
-        Mobile: user.mobile,
+        Mobile: user.Mobile,
         username: user.username,
         email: user.email,
         referralCode: user.referral_code,
         referralPoints: user.referral_point,
-      }
+      },
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
+
 router.post('/order', async (req, res) => {
   const orderDetails = req.body;
 
